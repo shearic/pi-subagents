@@ -127,6 +127,27 @@ function resolveFastModeExtension(input: Pick<ResolvePiLaunchToolPlanInput, "fas
 	return [FAST_MODE_EXTENSION_PATH];
 }
 
+/**
+ * Additional extension paths loaded into every child session, supplied by the
+ * launcher via PI_SUBAGENT_EXTRA_CHILD_EXTENSIONS (PATH-style, split on
+ * os/path delimiter). Additive only: appended to the agent's own
+ * subagentOnlyExtensions, so whatever loads today (ambient discovery in
+ * background children, the agent's `extensions`/`subagentOnlyExtensions`
+ * lists) keeps loading; a capability ceiling that denies extensions still
+ * denies these too. Merged here so the foreground plan, the serialized async
+ * step plan, preflight, and the runner all resolve the same set.
+ */
+export const EXTRA_CHILD_EXTENSIONS_ENV = "PI_SUBAGENT_EXTRA_CHILD_EXTENSIONS";
+
+export function extraChildExtensions(env: NodeJS.ProcessEnv = process.env): string[] {
+	const raw = env[EXTRA_CHILD_EXTENSIONS_ENV];
+	if (!raw) return [];
+	return raw
+		.split(path.delimiter)
+		.map((extensionPath) => extensionPath.trim())
+		.filter((extensionPath) => extensionPath.length > 0);
+}
+
 export interface ResolvePiLaunchToolPlanInput {
 	tools?: string[];
 	excludeTools?: string[];
@@ -434,12 +455,14 @@ export function resolvePiLaunchToolPlan(
 				+ "List the extensions this child actually needs instead of an empty array.",
 		);
 	}
+	const launcherExtraExtensions = extraChildExtensions();
 	const configuredExtensions = capabilityCeiling?.denyExtensions
 		? []
 		: [
 				...toolExtensionPaths,
 				...(input.extensions ?? []),
-				...(input.subagentOnlyExtensions ?? []),
+			...(input.subagentOnlyExtensions ?? []),
+			...launcherExtraExtensions,
 			];
 	const ordinaryExtensionArgs = disableAmbientExtensions
 		? [...new Set([...runtimeExtensions, ...configuredExtensions])]
@@ -448,6 +471,7 @@ export function resolvePiLaunchToolPlan(
 					...runtimeExtensions,
 					...toolExtensionPaths,
 					...(input.subagentOnlyExtensions ?? []),
+					...launcherExtraExtensions,
 				]),
 			];
 	// Host-required paths have final precedence and cannot be removed by agent defaults or overrides.

@@ -492,7 +492,7 @@ When `extensions` is present, normal discovered extensions are disabled. The lis
 
 Use `subagentOnlyExtensions` when a custom extension tool should exist only inside child sessions. It is scoped by agent config: every run of that agent receives those extension paths, while other agents do not unless they declare the same field. The current model does not have a separate named-subagent audience inside one agent definition.
 
-To apply a shared extension policy to every agent that does not declare its own, set `subagents.defaultExtensions` for an ambient-disabling allowlist or `subagents.defaultSubagentOnlyExtensions` for child-only paths that preserve ambient discovery (see [configuration.md](configuration.md)).
+To apply a shared extension policy to every agent that does not declare its own, set `subagents.defaultExtensions` for an ambient-disabling allowlist or `subagents.defaultSubagentOnlyExtensions` for child-only paths that preserve ambient discovery (see [configuration.md](configuration.md)). Both defaults are suppressed by an agent's own frontmatter list, so an extension that must reach every child regardless of agent declarations (for example an observability extension) should instead use [`PI_SUBAGENT_EXTRA_CHILD_EXTENSIONS`](configuration.md#pi_subagent_extra_child_extensions), which appends to every child's list and is never suppressed.
 
 Before the first model turn, the child runtime compares every explicit tool name with Pi's final filtered registry. A missing provider fails the run with the unavailable names and concrete `subagentOnlyExtensions`/`extensions` guidance, instead of letting a direct or chained child silently continue without its requested tools.
 

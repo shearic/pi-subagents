@@ -111,6 +111,16 @@ Every run has a unique id that appears in the parent-side `subagent` tool result
 
 Foreground children are sessions inside the parent Pi process, which can host independent runs and sessions, so no process-global identity is published for them; their lineage travels in the tool result details instead. Exact contracts: [`PI_SUBAGENT_RUN_ID`](https://github.com/nicobailon/pi-subagents/blob/main/docs/configuration.md#pi_subagent_run_id) and [`PI_SUBAGENT_PARENT_SESSION`](https://github.com/nicobailon/pi-subagents/blob/main/docs/configuration.md#pi_subagent_parent_session); overview in [Observability](https://github.com/nicobailon/pi-subagents/blob/main/docs/observability.md#lineage).
 
+### Loading extra extensions into children
+
+Set `PI_SUBAGENT_EXTRA_CHILD_EXTENSIONS` to load additional named extensions into every child session, for example an observability or tracing extension that records child activity:
+
+```bash
+export PI_SUBAGENT_EXTRA_CHILD_EXTENSIONS=/path/to/extension/index.ts
+```
+
+The list is PATH-style (split on the OS path delimiter). It is strictly additive: whatever loads today keeps loading — ambient extension discovery in background children (including provider-registering extensions), and each agent's own `extensions`/`subagentOnlyExtensions` lists — and the option only appends. It never replaces. A capability ceiling that denies extensions still denies these too. Default (unset) is exactly the current behavior. Exact contract: [Configuration](https://github.com/nicobailon/pi-subagents/blob/main/docs/configuration.md#pi_subagent_extra_child_extensions).
+
 ## If something feels off
 
 ```text

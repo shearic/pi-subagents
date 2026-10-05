@@ -668,6 +668,20 @@ The detached background runner process receives the run id of the run it hosts, 
 
 Foreground children are sessions inside the parent Pi process, which can host independent runs and sessions, so no process-global run identity is published for them; their lineage travels in the tool result details instead. A root host also deletes an ambient inherited value at session start, so a stale value never misattributes a root session. See [Observability](observability.md#lineage).
 
+## `PI_SUBAGENT_EXTRA_CHILD_EXTENSIONS`
+
+```bash
+export PI_SUBAGENT_EXTRA_CHILD_EXTENSIONS=/path/to/extension/index.ts:/path/to/another/index.ts
+```
+
+Additional extension paths loaded into every child session (foreground and background alike), PATH-style split on the OS path delimiter; empty and whitespace-only entries are dropped.
+
+The semantics are strictly **additive**: the extras are appended to each agent's own `subagentOnlyExtensions`, so whatever loads today keeps loading — ambient extension discovery in background children (including provider-registering extensions), and the agent's `extensions`/`subagentOnlyExtensions` lists. The option never replaces or disables anything, including when an agent sets `extensions` to replace its own ambient discovery. A `capabilityCeiling` with `denyExtensions: true` denies these too. Unset (the default) changes nothing.
+
+The settings-level `subagents.defaultSubagentOnlyExtensions` gives agents without their own `subagentOnlyExtensions` a shared child-only list, but an agent's frontmatter list (including `[]`) suppresses that default. This variable is the option for an extension that must reach **every** child regardless of agent declarations — the observability/tracing case — and for launchers and wrappers that supply the environment instead of settings files.
+
+The extras flow to the detached background runner automatically (it inherits the launcher environment) and are merged at the single resolution point (`resolvePiLaunchToolPlan`), so the foreground plan, the serialized async step plan, preflight, and the runner all resolve the same extension set.
+
 ## `PI_SUBAGENT_PARENT_SESSION`
 
 Set automatically by pi-subagents when it spawns the detached background runner; not an operator setting.
