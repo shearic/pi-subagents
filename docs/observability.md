@@ -307,10 +307,10 @@ Every parent-side record that describes a run carries the run id, and processes 
 |---|---|
 | Tool result | `details.runId` (foreground and workflow) or `details.asyncId` (async started receipts); per-child `details.results[].runId` for workflow children |
 | Completion notification | `SubagentNotifyDetails.workflowRunId`, `childRuns[].runId` |
-| Detached runner process env | `PI_SUBAGENT_RUN_ID` (the hosted run's id) |
+| Detached runner process env | `PI_SUBAGENT_RUN_ID` (the hosted run's id), `PI_SUBAGENT_PARENT_SESSION` (bare parent session id) |
 | Runner-hosted child session env | `PI_SUBAGENT_RUN_ID` (the child's own run id), applied while the child's extensions load and start |
 
-Foreground children are sessions inside the parent Pi process, so no process-global run identity is published for them; their lineage travels in the tool result details. The exact contract is in [configuration.md](configuration.md): [`PI_SUBAGENT_RUN_ID`](configuration.md#pi_subagent_run_id).
+Foreground children are sessions inside the parent Pi process, so no process-global run or parent identity is published for them; their lineage travels in the tool result details. The exact contracts are in [configuration.md](configuration.md): [`PI_SUBAGENT_RUN_ID`](configuration.md#pi_subagent_run_id) and [`PI_SUBAGENT_PARENT_SESSION`](configuration.md#pi_subagent_parent_session).
 
 ## Sessions
 

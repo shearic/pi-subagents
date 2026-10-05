@@ -668,6 +668,14 @@ The detached background runner process receives the run id of the run it hosts, 
 
 Foreground children are sessions inside the parent Pi process, which can host independent runs and sessions, so no process-global run identity is published for them; their lineage travels in the tool result details instead. A root host also deletes an ambient inherited value at session start, so a stale value never misattributes a root session. See [Observability](observability.md#lineage).
 
+## `PI_SUBAGENT_PARENT_SESSION`
+
+Set automatically by pi-subagents when it spawns the detached background runner; not an operator setting.
+
+The value is the **bare parent session id** (never a session file path): `ctx.parentSessionId ?? ctx.currentSessionId` of the launching session, validated non-empty and untrimmed before the spawn. Extensions loaded in the runner use it to address the parent session; pi-permission-system uses it to forward a child's `ask` request to the session that owns the run.
+
+It is set only in the runner's launch environment, and a root host deletes an ambient inherited value at session start (a root process can host multiple independent sessions, so a process-global parent identity is unsafe). `subagent({ action: "doctor" })` reports whether it is set. The detached runner also carries [`PI_SUBAGENT_RUN_ID`](#pi_subagent_run_id) alongside it, so `{ parent session id, run id }` attributes any child-side record exactly.
+
 ## `PI_SUBAGENT_CACHE_RETENTION`
 
 Sets the prompt-cache retention tier for child sessions, overriding `PI_CACHE_RETENTION` for children only. Environment-only; there is no config key. Accepts the same values Pi accepts, normally `short` or `long`.

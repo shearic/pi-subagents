@@ -107,8 +107,9 @@ For bounded orchestration, `maxSubagentSpawnsPerRun` limits cumulative logical c
 Every run has a unique id that appears in the parent-side `subagent` tool result (`details.runId`, or `details.asyncId` for async started receipts) and in every status, artifact, and completion notification about that run. Processes pi-subagents dedicates to a run also receive it as an environment variable, so an observability or tracing extension loaded in a child can attribute its records to the exact parent-side run:
 
 - `PI_SUBAGENT_RUN_ID` — the run id, set in the detached background runner process and re-published per runner-hosted child session. The same value the parent-side tool result reports.
+- `PI_SUBAGENT_PARENT_SESSION` — the bare parent session id, set in the detached runner's environment; used by pi-permission-system to forward child `ask` requests to the owning session.
 
-Foreground children are sessions inside the parent Pi process, which can host independent runs and sessions, so no process-global identity is published for them; their lineage travels in the tool result details instead. Exact contract: [Configuration](https://github.com/nicobailon/pi-subagents/blob/main/docs/configuration.md#pi_subagent_run_id); overview in [Observability](https://github.com/nicobailon/pi-subagents/blob/main/docs/observability.md#lineage).
+Foreground children are sessions inside the parent Pi process, which can host independent runs and sessions, so no process-global identity is published for them; their lineage travels in the tool result details instead. Exact contracts: [`PI_SUBAGENT_RUN_ID`](https://github.com/nicobailon/pi-subagents/blob/main/docs/configuration.md#pi_subagent_run_id) and [`PI_SUBAGENT_PARENT_SESSION`](https://github.com/nicobailon/pi-subagents/blob/main/docs/configuration.md#pi_subagent_parent_session); overview in [Observability](https://github.com/nicobailon/pi-subagents/blob/main/docs/observability.md#lineage).
 
 ## If something feels off
 

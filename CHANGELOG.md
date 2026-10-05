@@ -5,6 +5,7 @@
 ### Added
 
 - The detached background runner and each runner-hosted child session now receive `PI_SUBAGENT_RUN_ID`, the same run id the parent-side tool result reports as `details.runId`/`details.asyncId`, so observability and tracing extensions loaded in a child can attribute their records to the exact parent-side run. Root hosts delete ambient values at session start, so a stale value never misattributes a root session.
+- `PI_SUBAGENT_PARENT_SESSION` is now documented: its exact format (the bare parent session id, never a file path), how it is derived, where it is set (the detached runner's launch environment), and why root hosts do not publish it. The behavior is unchanged; it was previously documented only inside the watchdog notes.
 
 ### Changed
 
