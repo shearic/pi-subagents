@@ -126,15 +126,94 @@ none caused by these changes (verified on clean `main`):
 
 ## Manual verification transcript
 
-See `scripts/manual-verification.mjs` (added in a verification commit, not part
-of the shipped package). Run with:
+`scripts/manual-verification.mjs` (dev-only; `scripts/` is not part of the shipped
+npm package). Run from the repository root:
 
 ```bash
 node --experimental-strip-types scripts/manual-verification.mjs
 ```
 
-Transcript captured below after implementation (see "Verification runs").
+No real model is contacted: the background child is a scripted session factory
+(`scripts/manual-verification-runner-factory.mjs`) that records its launch
+environment from inside the real detached runner process, and the foreground
+child uses the real SDK with a synthetic local provider (`https://synthetic.invalid`).
 
-### Verification runs
+Exit code 0; transcript (trimmed to the relevant lines):
 
-(Filled in after implementation — see bottom of this file.)
+```text
+=== A. background child lineage env vars ===
+child record: {
+  "env": {
+    "PI_SUBAGENT_RUN_ID": "manual-verify-run",
+    "PI_SUBAGENT_PARENT_SESSION": "manual-verify-parent-session",
+    "PI_SUBAGENT_CHILD": "1"
+  },
+  "childRunId": "manual-verify-run",
+  "agent": "worker",
+  "storage": {
+    "kind": "dir",
+    "sessionDir": ".../sessions/async-manual-verify-run"
+  }
+}
+run status: complete exit: 0
+parent-side result details: {
+  "mode": "single",
+  "runId": "manual-verify-run",
+  "results": [],
+  "asyncId": "manual-verify-run",
+  "asyncDir": ".../async-subagent-runs/manual-verify-run",
+  ...
+}
+A: OK — lineage env vars present in the child; join key matches the parent-side result.
+
+=== B. additive child extension option ===
+no agent extensions -> disableAmbientExtensions: false
+extensionArgs: [
+  '.../src/runs/shared/subagent-prompt-runtime.ts',   # auto-discovered/runtime set kept
+  '.../tracing-extension.ts'                           # the named extra, appended
+]
+agent extensions: [/agent/own.ts] -> disableAmbientExtensions: true
+extensionArgs: [
+  '.../src/runs/shared/subagent-prompt-runtime.ts',
+  '/agent/own.ts',                                     # agent's replaced set, unchanged
+  '.../tracing-extension.ts'                           # extra still appended
+]
+B: OK — additive only; auto-discovered extensions kept; default unchanged when unset.
+
+=== C. child session persistence writes a session file ===
+foreground child exitCode: 0 error: (none)
+session files written: [
+  '.../foreground-sessions/2026-10-05T22-29-10-231Z_01a10e2f-....jsonl'
+]
+foreground child durationMs: 67
+A sample of the session file: {"type":"session","version":3,"id":"01a10e2f-...","timestamp":"2026-10-05T22:29:10.231Z",...}
+C: OK — persistence on by default; a real session file was written.
+
+All manual verification checks passed.
+```
+
+What each part proves:
+
+- **A** — a real detached runner process was spawned for the async run
+  (`executeAsyncSingle`), hosted the child session, and the child-hosting process
+  observed `PI_SUBAGENT_RUN_ID`, `PI_SUBAGENT_PARENT_SESSION`, and
+  `PI_SUBAGENT_CHILD=1`; the run id equals the parent-side tool result's
+  `details.runId`/`details.asyncId`, so the join works. The child session's
+  storage target is a persisted session dir.
+- **B** — `PI_SUBAGENT_EXTRA_CHILD_EXTENSIONS` appends the named extension and
+  keeps ambient discovery enabled (`disableAmbientExtensions: false`); an
+  agent's own `extensions` replace semantics are unchanged while the extra
+  still loads; unset changes nothing.
+- **C** — a foreground child through the real SDK session factory with a
+  synthetic local provider wrote a real `.jsonl` session file under the
+  session dir (persistence on by default), and its terminal result carries
+  `durationMs`.
+
+## Final test status
+
+- `npm run typecheck`: clean.
+- `npm run test:unit`: 3811 tests, 3784 pass, 10 fail — the **same 10
+  environmental failures as the pre-change baseline** (Unix-socket `EINVAL`
+  in this sandbox for `herdr-connection`/`herdr-native-placement`, a timing
+  budget in `extension-module-preload`, a terminal-width assumption in
+  `fleet`); 11 new tests added by this branch all pass. No regressions.
