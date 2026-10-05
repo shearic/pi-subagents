@@ -461,7 +461,7 @@ When `storeRoot` is omitted, schedules remain at `<cwd>/.pi/subagents/schedules`
 { "defaultSessionDir": "~/.pi/agent/sessions/subagent/" }
 ```
 
-Session directory precedence is: `params.sessionDir`, then `config.defaultSessionDir`, then a directory derived from the parent session. Sessions are always enabled.
+Session directory precedence is: `params.sessionDir`, then `config.defaultSessionDir`, then a directory derived from the parent session. Sessions are always enabled: every child (foreground and background) gets a session file under `<session root>/<runId>/run-<index>/session.jsonl`, so children get stable session ids and resumable session files. The tradeoff is disk usage — one session file per child per run, plus `context: "fork"` branches, retained until you clean up the directory you route them to.
 
 ## `singleRunOutputBaseDir`
 
