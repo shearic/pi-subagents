@@ -56,6 +56,7 @@ for (const [entry, missingBootstrap] of [
 				assert.equal(options.env.PI_SUBAGENTS_PI_CODING_AGENT_PACKAGE_ROOT, undefined);
 				assert.equal(options.env.PI_PACKAGE_DIR, process.env.PI_PACKAGE_DIR);
 				assert.equal(options.env.PI_SUBAGENT_PARENT_SESSION, "binary-spawn");
+				assert.equal(options.env.PI_SUBAGENT_RUN_ID, `binary-${missingBootstrap}`);
 				assert.ok(path.isAbsolute(options.env.PI_SUBAGENT_RUNNER_CONFIG));
 				assert.equal(options.cwd, root);
 				assert.equal(options.stdio[0], "ignore");
@@ -69,6 +70,7 @@ for (const [entry, missingBootstrap] of [
 				assert.match(withoutParent.content[0]!.text, /captured binary spawn/);
 				assert.equal(spawn.mock.callCount(), 2);
 				assert.equal(spawn.mock.calls[1]!.arguments[2].env.PI_SUBAGENT_PARENT_SESSION, undefined);
+				assert.equal(spawn.mock.calls[1]!.arguments[2].env.PI_SUBAGENT_RUN_ID, "binary-no-parent");
 
 				const attached = executeAsyncChain("binary-attached", {
 					chain: [{ agent: "worker", task: "Continue" }],
@@ -82,6 +84,7 @@ for (const [entry, missingBootstrap] of [
 				assert.equal(spawn.mock.callCount(), 3);
 				const attachedOptions = spawn.mock.calls[2]!.arguments[2];
 				assert.equal(attachedOptions.env.PI_SUBAGENT_PARENT_SESSION, "attach-parent");
+				assert.equal(attachedOptions.env.PI_SUBAGENT_RUN_ID, "binary-attached");
 				const attachedConfig = JSON.parse(fs.readFileSync(attachedOptions.env.PI_SUBAGENT_RUNNER_CONFIG, "utf-8"));
 				assert.deepEqual(attachedConfig.steps.map((step: { parentSessionId?: string }) => step.parentSessionId), ["attach-parent", "attach-parent"]);
 

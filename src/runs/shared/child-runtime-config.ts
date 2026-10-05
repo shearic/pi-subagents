@@ -16,6 +16,13 @@ import type { RequiredChildExtensionSnapshot } from "../../shared/required-child
 export const SUBAGENT_CHILD_ENV = "PI_SUBAGENT_CHILD";
 /** Root parent session id the parent publishes for pi-permission-system ask forwarding. */
 export const SUBAGENT_PARENT_SESSION_ENV = "PI_SUBAGENT_PARENT_SESSION";
+/**
+ * Run id the parent publishes for observability extensions: the same id that
+ * appears as `details.runId`/`details.asyncId` in the parent-side tool result.
+ * Set only in processes dedicated to one run (the detached runner and runner-
+ * hosted child session launches), never process-globally in a root host.
+ */
+export const SUBAGENT_RUN_ID_ENV = "PI_SUBAGENT_RUN_ID";
 
 export interface ChildNestedRoute {
 	rootRunId: string;

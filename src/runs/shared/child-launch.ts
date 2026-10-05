@@ -31,7 +31,7 @@ import {
 	supervisorChannelDir,
 	type PiLaunchToolPlan,
 } from "./child-tool-plan.ts";
-import type { ChildRuntimeConfig } from "./child-runtime-config.ts";
+import { SUBAGENT_RUN_ID_ENV, type ChildRuntimeConfig } from "./child-runtime-config.ts";
 import { createCapturedChildHooks, withChildSessionErrorReporting } from "./child-hooks.ts";
 import type { ChildTranscriptWriter } from "../../shared/child-transcript.ts";
 import type { ChildSessionLaunch, ChildSessionStorage } from "./child-session.ts";
@@ -164,6 +164,9 @@ function inheritedCapabilityCeiling(inherited: InheritedChildRuntime | undefined
 function childProcessEnv(input: BuildInProcessChildLaunchInput, toolPlan: PiLaunchToolPlan): Record<string, string | undefined> {
 	const env: Record<string, string | undefined> = {};
 	env[PI_SUBAGENT_EXTENSION_BINDINGS_ENV] = encodeExtensionBindings(input.extensionBindings);
+	// The child's own run id; the same value the parent-side result reports for it.
+	// An undefined id removes the variable so a later launch never observes a stale value.
+	env[SUBAGENT_RUN_ID_ENV] = input.runId;
 	// Selectors resolved against Pi's built-in MCP never reach an adapter.
 	if (toolPlan.builtinMcpTools) env[MCP_DIRECT_TOOLS_ENV] = "__none__";
 	else if (!toolPlan.capabilityCeiling && input.mcpDirectTools?.length) env[MCP_DIRECT_TOOLS_ENV] = input.mcpDirectTools.join(",");

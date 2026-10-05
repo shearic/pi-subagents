@@ -102,6 +102,14 @@ Details, keybindings, and the machine-readable run artifacts are in [Observabili
 
 For bounded orchestration, `maxSubagentSpawnsPerRun` limits cumulative logical children in one run tree. It defaults to 64 and stays separate from active concurrency and the session-wide cumulative spawn budget. See [Configuration](https://github.com/nicobailon/pi-subagents/blob/main/docs/configuration.md#maxsubagentspawnsperrun).
 
+## Observability lineage
+
+Every run has a unique id that appears in the parent-side `subagent` tool result (`details.runId`, or `details.asyncId` for async started receipts) and in every status, artifact, and completion notification about that run. Processes pi-subagents dedicates to a run also receive it as an environment variable, so an observability or tracing extension loaded in a child can attribute its records to the exact parent-side run:
+
+- `PI_SUBAGENT_RUN_ID` — the run id, set in the detached background runner process and re-published per runner-hosted child session. The same value the parent-side tool result reports.
+
+Foreground children are sessions inside the parent Pi process, which can host independent runs and sessions, so no process-global identity is published for them; their lineage travels in the tool result details instead. Exact contract: [Configuration](https://github.com/nicobailon/pi-subagents/blob/main/docs/configuration.md#pi_subagent_run_id); overview in [Observability](https://github.com/nicobailon/pi-subagents/blob/main/docs/observability.md#lineage).
+
 ## If something feels off
 
 ```text

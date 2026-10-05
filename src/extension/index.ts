@@ -71,7 +71,7 @@ import { drainOutstandingWork } from "../runs/background/auto-drain.ts";
 import registerSubagentNotify, { parseSubagentNotifyContent, type SubagentNotifyDetails } from "../runs/background/notify.ts";
 import { createParentWake } from "../shared/parent-wake.ts";
 import { formatSteeringNotice, handleSubagentSteeringNotice, SUBAGENT_STEERING_MESSAGE_TYPE, type SubagentSteeringMessageDetails } from "./steering-notices.ts";
-import { SUBAGENT_CHILD_ENV, SUBAGENT_PARENT_SESSION_ENV } from "../runs/shared/child-runtime-config.ts";
+import { SUBAGENT_CHILD_ENV, SUBAGENT_PARENT_SESSION_ENV, SUBAGENT_RUN_ID_ENV } from "../runs/shared/child-runtime-config.ts";
 import { disposeChildSessions } from "../runs/shared/child-session.ts";
 import { resolveCurrentSubagentCapabilityCeiling } from "../runs/shared/capability-ceiling.ts";
 import { formatDuration, shortenPath } from "../shared/formatters.ts";
@@ -970,9 +970,11 @@ export default function registerSubagentExtension(pi: ExtensionAPI): void {
 		const projectPaneOwnerRoot = path.resolve(ctx.cwd);
 		restoreHerdrProjectPaneSnapshots(state, [...new Set([...(state.herdrProjectPanes?.keys() ?? []), ...listHerdrProjectPaneRoots(projectPaneOwnerRoot), projectPaneOwnerRoot])]);
 		// Root hosts may contain independent sessions, so a process-global parent
-		// identity is unsafe. Dedicated child runners retain their launch-owned value.
+		// identity or run identity is unsafe. Dedicated child runners retain their
+		// launch-owned values.
 		if (!process.env[SUBAGENT_CHILD_ENV]) {
 			delete process.env[SUBAGENT_PARENT_SESSION_ENV];
+			delete process.env[SUBAGENT_RUN_ID_ENV];
 		}
 		state.lastUiContext = ctx;
 		let phaseStartedAt = Date.now();

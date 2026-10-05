@@ -299,6 +299,19 @@ Metadata records timing, usage, exit code, the resolved model, and the resolved 
 
 For npm package projects, project-scoped artifacts need a `.npmignore` rule (or `.gitignore` when no `.npmignore` exists) or a `files` allowlist that does not include `.pi/subagents/`. pi-subagents warns at launch when these package settings can include the artifacts. Use `artifactDir: "session"` or `"temp"` to keep them outside the package worktree.
 
+## Lineage
+
+Every parent-side record that describes a run carries the run id, and processes pi-subagents dedicates to a run also receive it (and the parent session id) as environment variables, so an observability or tracing extension can join child-side records to the parent-side run without guessing:
+
+| Where | Key |
+|---|---|
+| Tool result | `details.runId` (foreground and workflow) or `details.asyncId` (async started receipts); per-child `details.results[].runId` for workflow children |
+| Completion notification | `SubagentNotifyDetails.workflowRunId`, `childRuns[].runId` |
+| Detached runner process env | `PI_SUBAGENT_RUN_ID` (the hosted run's id) |
+| Runner-hosted child session env | `PI_SUBAGENT_RUN_ID` (the child's own run id), applied while the child's extensions load and start |
+
+Foreground children are sessions inside the parent Pi process, so no process-global run identity is published for them; their lineage travels in the tool result details. The exact contract is in [configuration.md](configuration.md): [`PI_SUBAGENT_RUN_ID`](configuration.md#pi_subagent_run_id).
+
 ## Sessions
 
 Session files are stored under a per-run session directory. With `context: "fork"`, each child starts from a branched session file produced from the parent's current leaf (foreground children open it in-process; background children receive it as `--session`). That is a real session fork, not an injected summary. An omitted launch `context` that resolves through `defaultContext: fork` uses the same branch when the parent session file and current leaf exist, and otherwise starts fresh.

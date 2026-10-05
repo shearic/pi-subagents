@@ -660,6 +660,14 @@ Controls smart batching of async-completion notifications. When several backgrou
 
 Native child tool permission rules. See [watchdog.md](watchdog.md#native-child-tool-permissions).
 
+## `PI_SUBAGENT_RUN_ID`
+
+Set automatically by pi-subagents in processes it dedicates to one run; not an operator setting.
+
+The detached background runner process receives the run id of the run it hosts, and each runner-hosted child session launch re-publishes the child's own run id while its extensions load and start. The value is the same id the parent-side `subagent` tool result reports as `details.runId` (foreground and workflow runs) or `details.asyncId` (async started receipts), and the same id `subagent({ action: "status", id })` accepts, so an observability or tracing extension loaded in the child can attribute its records to the exact parent-side run by reading one variable.
+
+Foreground children are sessions inside the parent Pi process, which can host independent runs and sessions, so no process-global run identity is published for them; their lineage travels in the tool result details instead. A root host also deletes an ambient inherited value at session start, so a stale value never misattributes a root session. See [Observability](observability.md#lineage).
+
 ## `PI_SUBAGENT_CACHE_RETENTION`
 
 Sets the prompt-cache retention tier for child sessions, overriding `PI_CACHE_RETENTION` for children only. Environment-only; there is no config key. Accepts the same values Pi accepts, normally `short` or `long`.

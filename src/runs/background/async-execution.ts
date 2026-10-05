@@ -69,7 +69,7 @@ import {
 	resolveChildMaxSubagentDepth,
 } from "../../shared/types.ts";
 import { inheritedNestedParentAddressOf, inheritedNestedRouteOf, nestedResultsPath, nestedSummaryFromAsyncStatus, writeNestedEvent } from "../shared/nested-events.ts";
-import { SUBAGENT_PARENT_SESSION_ENV, type ChildRuntimeConfig } from "../shared/child-runtime-config.ts";
+import { SUBAGENT_PARENT_SESSION_ENV, SUBAGENT_RUN_ID_ENV, type ChildRuntimeConfig } from "../shared/child-runtime-config.ts";
 import { childSessionFactoryModule } from "../shared/child-session.ts";
 import { inheritedChildRuntime } from "../shared/child-launch.ts";
 import { resultFilePath } from "./result-files.ts";
@@ -745,6 +745,10 @@ function spawnRunner(cfg: object, suffix: string, cwd: string, initialStatus: Om
 		};
 		if (launchParentSessionId === undefined) delete runnerEnv[SUBAGENT_PARENT_SESSION_ENV];
 		else runnerEnv[SUBAGENT_PARENT_SESSION_ENV] = launchParentSessionId;
+		// The same run id the parent-side tool result reports as details.runId/details.asyncId;
+		// observability extensions in this dedicated runner process attribute its child activity to the run.
+		if (launchRunId) runnerEnv[SUBAGENT_RUN_ID_ENV] = launchRunId;
+		else delete runnerEnv[SUBAGENT_RUN_ID_ENV];
 		const proc = spawn(command, args, {
 			cwd,
 			...backgroundProcessOptions(),

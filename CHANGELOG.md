@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- The detached background runner and each runner-hosted child session now receive `PI_SUBAGENT_RUN_ID`, the same run id the parent-side tool result reports as `details.runId`/`details.asyncId`, so observability and tracing extensions loaded in a child can attribute their records to the exact parent-side run. Root hosts delete ambient values at session start, so a stale value never misattributes a root session.
+
 ### Changed
 
 - The npm package now has the `extension` keyword, so the Pi extension catalog lists pi-subagents under Extensions instead of Unlabelled.
