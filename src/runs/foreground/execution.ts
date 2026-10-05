@@ -527,6 +527,7 @@ async function runSingleAttempt(
 	if (attemptTimeout?.remainingMs === 0) {
 		result.exitCode = 1;
 		result.timedOut = true;
+		result.durationMs = Date.now() - startTime;
 		result.error = attemptTimeout.message;
 		result.finalOutput = attemptTimeout.message;
 		progress.status = "failed";
@@ -556,6 +557,7 @@ async function runSingleAttempt(
 		});
 		if (permitError) {
 			result.exitCode = 1;
+			result.durationMs = Date.now() - startTime;
 			result.error = permitError;
 			result.finalOutput = permitError;
 			progress.status = "failed";
@@ -606,6 +608,7 @@ async function runSingleAttempt(
 			const receipt = snapshotResult(result, receiptProgress);
 			receipt.exitCode = -2;
 			receipt.detached = true;
+			receipt.durationMs = receiptProgress.durationMs;
 			receipt.detachedReason = reason;
 			receipt.finalOutput = reason === "intercom coordination"
 				? "Detached for intercom coordination before task completion."
@@ -1435,6 +1438,7 @@ async function runSingleAttempt(
 		})();
 	});
 	result.exitCode = exitCode;
+	result.durationMs = Date.now() - startTime;
 	if (afterCompactionSettlement) {
 		(result as AbortRecoverySingleResult)[AFTER_COMPACTION_SETTLEMENT] = true;
 	}

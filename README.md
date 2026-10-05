@@ -121,6 +121,10 @@ export PI_SUBAGENT_EXTRA_CHILD_EXTENSIONS=/path/to/extension/index.ts
 
 The list is PATH-style (split on the OS path delimiter). It is strictly additive: whatever loads today keeps loading — ambient extension discovery in background children (including provider-registering extensions), and each agent's own `extensions`/`subagentOnlyExtensions` lists — and the option only appends. It never replaces. A capability ceiling that denies extensions still denies these too. Default (unset) is exactly the current behavior. Exact contract: [Configuration](https://github.com/nicobailon/pi-subagents/blob/main/docs/configuration.md#pi_subagent_extra_child_extensions).
 
+### Structured result details
+
+`subagent` tool results already carry a structured `details` object (run id, mode, per-child `results[]` with agent, model, usage, session file, and stop reason as `interrupted`/`timedOut`/`stopped`/`error`/`exitCode`, aggregate usage and cost). Each per-child entry now also carries `durationMs`, the child's wall-clock duration from launch to terminal result, so consumers get timing alongside tokens and cost without scraping prose. See [Observability](https://github.com/nicobailon/pi-subagents/blob/main/docs/observability.md#status-and-result-fields).
+
 ## If something feels off
 
 ```text

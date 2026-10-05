@@ -1067,6 +1067,8 @@ export async function runSingleStepInner(
 	const effectiveCwd = step.cwd ?? ctx.cwd;
 	const cwdError = preflightLaunchCwd(step.requestedCwd ?? effectiveCwd, effectiveCwd);
 	if (cwdError) return { agent: step.agent, output: cwdError, error: cwdError, exitCode: 1, context: step.context };
+	// Wall-clock step duration reported on the terminal result; attempts before launch leave it undefined.
+	const stepStartTime = Date.now();
 	if (step.context === "fork" && step.sessionFile && fs.existsSync(step.sessionFile)) {
 		alignForkedSessionCwd(step.sessionFile, effectiveCwd);
 	}
@@ -1531,6 +1533,7 @@ export async function runSingleStepInner(
 		outputState,
 		outputPartial: finalResult?.outputPartial,
 		exitCode: effectiveFinalExitCode,
+		durationMs: Date.now() - stepStartTime,
 		error: effectiveFinalError,
 		sessionFile: step.sessionFile,
 		intercomTarget: ctx.childIntercomTarget,

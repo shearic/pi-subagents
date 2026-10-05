@@ -232,6 +232,8 @@ The status/result fields are: `lifecycleArtifactVersion`, `runId`/`id`, `session
 
 `requestedModel` records the launch's requested model (the explicit `--model` override, else the agent's configured model) before registry normalization.
 
+Each per-child entry in a terminal tool result's `details.results[]` carries `durationMs`: the child's wall-clock run duration in milliseconds, from launch to terminal result (undefined when the child never launched). The stop reason is carried by the existing structured fields on the same entry: `interrupted`, `timedOut`, `stopped`, `error`, and `exitCode`.
+
 `launchResolvedExtensions` is parent-resolved launch intent only: it reports opaque extension identifiers and whether ambient extensions were disabled, without exposing raw extension paths or claiming the child runtime acknowledged that those extensions loaded.
 
 ### Runtime extension acknowledgement

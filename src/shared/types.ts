@@ -1290,6 +1290,8 @@ export interface SingleResult {
 	context?: "fresh" | "fork";
 	exitCode: number;
 	processSignal?: string | null;
+	/** Wall-clock duration of this child's run in milliseconds, from launch to terminal result; undefined when the attempt never started. */
+	durationMs?: number;
 	timeoutRecovery?: TimeoutRecoverySummary;
 	detached?: boolean;
 	detachedReason?: string;
